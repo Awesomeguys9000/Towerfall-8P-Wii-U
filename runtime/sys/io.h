@@ -74,6 +74,7 @@ struct FileStream final : Stream, ::sys::Finalizable
     void set_Position(int64_t p) override;
     int64_t Seek(int64_t off, SeekOrigin o) override;
     bool get_CanWrite() override { return writing; }
+    std::vector<uint8_t> ReadAllBytesNative() override;   // one bulk read (much faster on Wii U SD)
 };
 
 struct TextReader : Object, IDisposable

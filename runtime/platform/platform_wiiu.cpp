@@ -540,6 +540,14 @@ void input_init()
     load_controls();
     sync_init();
     g_input_up = true;
+    // The GamePad and remotes need a moment before their first report; poll for up to 0.5 s so
+    // the controllers are already connected when the game assigns players during loading.
+    for (int i = 0; i < 30; i++)
+    {
+        update_input();
+        if (g_slots[0].state.connected) break;
+        OSSleepTicks(OSMillisecondsToTicks(16));
+    }
 }
 
 void log_file_open()

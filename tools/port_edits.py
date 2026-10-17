@@ -58,6 +58,12 @@ def round_results(s):
                         "FinishSaveReplay(completed: false);", "GifExporter")
 
 
+def menu_buttons(s):
+    # No players assigned yet (e.g. Wii U pads not reported at startup): fall back to default
+    # icons instead of leaving them null (the PC build always had a keyboard player here).
+    return replace_once(s, '\t\t\t\tAltShoot = TFGame.PlayerInputs[i].AltShootIcon;\n\t\t\t\tbreak;\n\t\t\t}\n\t\t}\n\t}', '\t\t\t\tAltShoot = TFGame.PlayerInputs[i].AltShootIcon;\n\t\t\t\tbreak;\n\t\t\t}\n\t\t}\n\t\tif (StartGame == null && TFGame.MenuAtlas != null)\n\t\t{\n\t\t\tConfirm = TFGame.MenuAtlas["controls/snes/a"];\n\t\t\tBack = TFGame.MenuAtlas["controls/snes/b"];\n\t\t\tAlt = TFGame.MenuAtlas["controls/snes/r"];\n\t\t\tSkipReplay = TFGame.MenuAtlas["controls/snes/start"];\n\t\t\tStartGame = TFGame.MenuAtlas["controls/snes/start"];\n\t\t\tAltShoot = TFGame.MenuAtlas["controls/snes/y"];\n\t\t}\n\t}', "MenuButtons.Update")
+
+
 def minput(s):
     s = replace_once(s, "\t\tinternal void Update(bool focus)\n\t\t{\n\t\t\tPreviousState = CurrentState;\n",
                      "\t\tprivate uint gameCurrent;\n\n\t\tprivate uint gamePrevious;\n\n"
@@ -106,6 +112,7 @@ def main():
     edit(dst, "TowerFall/VersusRoundResults.cs", round_results)
     edit(dst, "Monocle/MInput.cs", minput)
     edit(dst, "TowerFall/XGamepadInput.cs", xgamepad)
+    edit(dst, "TowerFall/MenuButtons.cs", menu_buttons)
     here = os.path.dirname(os.path.abspath(__file__))
     os.makedirs(os.path.join(dst, "Port"), exist_ok=True)
     shutil.copy(os.path.join(here, "port_cs", "Native.cs"), os.path.join(dst, "Port", "Native.cs"))

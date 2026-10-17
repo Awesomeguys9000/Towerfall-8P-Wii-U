@@ -45,6 +45,7 @@ bool read_file(const std::string& nativePath, std::vector<uint8_t>& out)
     plat::loading_tick(nativePath.c_str());
     FILE* f = fopen(nativePath.c_str(), "rb");
     if (!f) return false;
+    setvbuf(f, nullptr, _IONBF, 0);   // whole-file read: skip stdio's small buffer
     fseek(f, 0, SEEK_END);
     long n = ftell(f);
     fseek(f, 0, SEEK_SET);
@@ -226,6 +227,23 @@ FileStream::FileStream(String* p, FileMode mode, FileAccess access, FileShare)
         throw ::sys::gcnew<IOException>(String::FromUtf8(("Could not open file '" + path + "'.").c_str()));
     }
 }
+std::vector<uint8_t> FileStream::ReadAllBytesNative()
+{
+    std::vector<uint8_t> r;
+    if (!f) return r;
+    long cur = ftell(f);
+    fseek(f, 0, SEEK_END);
+    long end = ftell(f);
+    fseek(f, cur, SEEK_SET);
+    if (end > cur)
+    {
+        r.resize((size_t)(end - cur));
+        size_t got = fread(r.data(), 1, r.size(), f);
+        r.resize(got);
+    }
+    return r;
+}
+
 int32_t FileStream::Read(Array<uint8_t>* b, int32_t off, int32_t count) { return f ? (int32_t)fread(b->data + off, 1, (size_t)count, f) : 0; }
 void FileStream::Write(Array<uint8_t>* b, int32_t off, int32_t count)
 {

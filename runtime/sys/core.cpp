@@ -1,4 +1,5 @@
 #include "runtime_sys.h"
+#include "../platform/platform.h"
 #include <cstdio>
 #include <cstdlib>
 #include <cinttypes>
@@ -8,7 +9,15 @@ using namespace System;
 
 namespace sys {
 
-[[noreturn]] void throw_null() { throw gcnew<NullReferenceException>(String::FromUtf8("Object reference not set to an instance of an object.")); }
+[[noreturn]] __attribute__((noinline)) void throw_null()
+{
+    // Log where it happened: the caller's address plus our own, so it can be mapped back with
+    // addr2line even when the code is relocated (Wii U RPX).
+    char b[160];
+    snprintf(b, sizeof b, "NullReferenceException at caller=%p (throw_null=%p)", __builtin_return_address(0), (void*)&throw_null);
+    plat::log(b);
+    throw gcnew<NullReferenceException>(String::FromUtf8("Object reference not set to an instance of an object."));
+}
 [[noreturn]] void throw_invalid_cast(const char* to)
 {
     std::string m = "Specified cast is not valid (to ";

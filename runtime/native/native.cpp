@@ -16,5 +16,7 @@ uint32_t TowerFall::Native::GamePadGameButtons(int32_t index)
 
 ::System::String* TowerFall::Native::GetPlatform()
 {
-    return plat::is_wiiu() ? TF_S(u"Wii U") : TF_S(u"Desktop");
+    if (plat::is_wiiu()) return TF_S(u"Wii U");
+    if (const char* p = getenv("TF_PLATFORM")) return ::System::String::FromUtf8(p);   // testing
+    return TF_S(u"Desktop");
 }
