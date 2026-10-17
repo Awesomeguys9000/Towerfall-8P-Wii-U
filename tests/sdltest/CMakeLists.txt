@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.16)
+project(sdltest C)
+find_package(SDL2 REQUIRED)
+add_executable(sdltest main.c)
+target_link_libraries(sdltest SDL2::SDL2 SDL2::SDL2main)
+wut_create_rpx(sdltest)

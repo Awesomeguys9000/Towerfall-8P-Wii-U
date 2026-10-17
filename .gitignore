@@ -1,0 +1,31 @@
+# --- game-derived, generated locally by setup.sh from YOUR copy of TowerFall: never commit ---
+/decomp/
+/cs/
+/gen/
+/wiiu/*.png
+/TF-8P/
+*.xnb
+*.xwb
+*.xsb
+*.xgs
+
+# --- build outputs / local tools ---
+/build/
+/tests/sdltest/build/
+/tools/cs2cpp/bin/
+/tools/cs2cpp/obj/
+/tools/Cemu.app/
+/tools/cemu_dl/
+/tools/*.log
+/ref/
+compile_flags.txt
+extern_usage.txt
+.DS_Store
+
+# --- research outputs (derived from game files); the scripts and REPORT.md are kept ---
+/assets_research/music_ogg/
+/assets_research/music_wav/
+/assets_research/fonts/
+/assets_research/shaders_disasm.txt
+/assets_research/music_manifest.json
+__pycache__/
