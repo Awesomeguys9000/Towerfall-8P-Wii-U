@@ -6,6 +6,13 @@ Wii U GamePad, Wii Remotes, Pro Controllers and more.
 This is an unofficial fan port. It contains **no game files**. You build it yourself from your own
 copy of TowerFall, and the free **TowerFall 8P Builder** app does all of the work for you.
 
+> ### 🏹 Get the game: [**Buy TowerFall 8-Player on itch.io**](https://maddymakesgamesinc.itch.io/towerfall-8-player)
+>
+> The port needs your own copy of **TowerFall 8-Player**, the official eight-player version of
+> TowerFall by Maddy Makes Games and Extremely OK Games. It's $4 (or more, if you'd like to support
+> them) at **[maddymakesgamesinc.itch.io/towerfall-8-player](https://maddymakesgamesinc.itch.io/towerfall-8-player)**. After buying, download
+> **`TF-8P.zip`**.
+
 - [Credits and thanks](#credits-and-thanks)
 - [Installation guide (start here)](#installation-guide)
 - [Controls](wiiu/README.md#controllers)
@@ -19,11 +26,13 @@ code, art, music and sound are entirely their work. This port only carries that 
 Wii U, and it could only be built because of the tools and libraries that other people wrote and
 shared for free. Thank you all.
 
-If you enjoy TowerFall, please support the people who made it by buying the game.
+If you enjoy TowerFall, please support the people who made it by [buying the game](https://maddymakesgamesinc.itch.io/towerfall-8-player).
 
 ### TowerFall Ascension and TowerFall 8-Player
 
-Made by **Matt Makes Games** (now **Extremely OK Games**). From the game's own credits:
+Made by **Maddy Makes Games** (formerly Matt Makes Games) and **Extremely OK Games**.
+[TowerFall 8-Player](https://maddymakesgamesinc.itch.io/towerfall-8-player) is the official eight-player version of TowerFall Ascension.
+From the game's own credits:
 
 | | |
 |---|---|
@@ -84,11 +93,19 @@ time, most of it waiting for downloads.
   [wiiu.hacks.guide](https://wiiu.hacks.guide/). It also shows you how to prepare your SD card.
 - **The SD card** from your Wii U (the one Aroma is on), plus a way to plug it into your computer.
 - **A computer** running Windows 10/11, macOS or Linux, with about 3 GB of free space.
-- **Your own copy of TowerFall, the 8-player build, Mac/Linux version.** It's a folder that
-  contains `Content`, `DarkWorldContent` and `TowerFall.app` (or `TowerFall.exe` next to a file
-  called `FNA.dll`). The Windows-only version won't work, and the Builder tells you if you pick it.
+- **TowerFall 8-Player**, bought from [itch.io](https://maddymakesgamesinc.itch.io/towerfall-8-player) (Step 1 below).
 
-### Step 1: Download the TowerFall 8P Builder
+### Step 1: Buy and download TowerFall 8-Player
+
+1. Go to **[TowerFall 8-Player on itch.io](https://maddymakesgamesinc.itch.io/towerfall-8-player)** and click **Buy Now** ($4 or more).
+2. After paying, itch.io shows the download files. Download **`TF-8P.zip`** (about 250 MB). Use this
+   one whatever computer you have, even a Mac or Linux PC: it holds the files the Builder needs.
+3. Unzip it. You get a folder called `TF-8P` with `Content`, `DarkWorldContent` and `TowerFall.app`
+   inside. Leave it somewhere easy to find, such as your Downloads or Documents folder.
+
+You don't have to install or run the game on your computer; the Builder only reads these files.
+
+### Step 2: Download the TowerFall 8P Builder
 
 Go to the [Releases page](https://github.com/Awesomeguys9000/Towerfall-8P-Wii-U/releases/latest)
 and download the file for your computer:
@@ -105,12 +122,12 @@ Not sure which Mac you have? Click the Apple menu → **About This Mac** and loo
 
 You don't need to install anything else first: the app includes everything it needs to run.
 
-### Step 2: Choose your TowerFall folder
+### Step 3: Choose your TowerFall folder
 
-In the Builder, click **Choose…** next to "Your TowerFall folder" and pick your TowerFall folder.
+In the Builder, click **Choose…** next to "Your TowerFall folder" and pick the `TF-8P` folder.
 A green **✓ Found TowerFall** appears when it's the right one.
 
-### Step 3: Install devkitPro (first time only)
+### Step 4: Install devkitPro (first time only)
 
 devkitPro is the free toolkit that builds Wii U software. It's the one thing the Builder can't
 include, so it helps you install it. If "devkitPro Wii U toolchain" has a red ✗:
@@ -128,7 +145,7 @@ include, so it helps you install it. If "devkitPro Wii U toolchain" has a red �
 
 A ↓ next to .NET, CMake or Ninja is fine: the Builder downloads those by itself when you build.
 
-### Step 4: Build and copy to your SD card
+### Step 5: Build and copy to your SD card
 
 1. Put your Wii U's SD card into your computer.
 2. In the Builder, tick **Copy to SD card**, click **Choose…** and pick the SD card. On Windows it's
@@ -140,7 +157,7 @@ A ↓ next to .NET, CMake or Ninja is fine: the Builder downloads those by itsel
 Your saves and settings already on the SD card are kept, so you can run the Builder again any time,
 for example after a new version comes out.
 
-### Step 5: Play
+### Step 6: Play
 
 Turn on your Wii U, start Aroma as usual, and open **TowerFall 8P** from the Wii U Menu.
 
@@ -151,9 +168,9 @@ button layouts are in the [controller guide](wiiu/README.md#controllers).
 ### Troubleshooting
 
 - **The Build button is greyed out.** Check that your TowerFall folder has a green ✓, devkitPro
-  shows ✓ (Step 3), and the SD card is chosen (or untick "Copy to SD card").
-- **"This looks like the Windows (XNA) version".** The port needs the Mac/Linux version of the
-  8-player build, which has `FNA.dll` next to `TowerFall.exe`.
+  shows ✓ (Step 4), and the SD card is chosen (or untick "Copy to SD card").
+- **"This looks like the Windows (XNA) version" or "No Content folder found".** Pick the whole
+  `TF-8P` folder you unzipped from `TF-8P.zip` (Step 1), not a folder inside it.
 - **The build failed.** The box at the bottom of the Builder shows what went wrong. Often running it
   again fixes download hiccups. If not, open an
   [issue](https://github.com/Awesomeguys9000/Towerfall-8P-Wii-U/issues) and paste the last part of
