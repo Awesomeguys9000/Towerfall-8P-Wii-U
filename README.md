@@ -6,7 +6,7 @@ Wii U GamePad, Wii Remotes, Pro Controllers and more.
 This is an unofficial fan port. It contains **no game files**. You build it yourself from your own
 copy of TowerFall, and the free **TowerFall 8P Builder** app does all of the work for you.
 
-> ### 🏹 Get the game: [**Buy TowerFall 8-Player on itch.io**](https://maddymakesgamesinc.itch.io/towerfall-8-player)
+> ### Get the game: [**Buy TowerFall 8-Player on itch.io**](https://maddymakesgamesinc.itch.io/towerfall-8-player)
 >
 > The port needs your own copy of **TowerFall 8-Player**, the official eight-player version of
 > TowerFall by Maddy Makes Games and Extremely OK Games. It's $4 (or more, if you'd like to support
@@ -125,12 +125,12 @@ You don't need to install anything else first: the app includes everything it ne
 ### Step 3: Choose your TowerFall folder
 
 In the Builder, click **Choose…** next to "Your TowerFall folder" and pick the `TF-8P` folder.
-A green **✓ Found TowerFall** appears when it's the right one.
+A green tick and **Found TowerFall** appear when it's the right one.
 
 ### Step 4: Install devkitPro (first time only)
 
 devkitPro is the free toolkit that builds Wii U software. It's the one thing the Builder can't
-include, so it helps you install it. If "devkitPro Wii U toolchain" has a red ✗:
+include, so it helps you install it. If "devkitPro Wii U toolchain" has a red cross:
 
 1. Click **Install devkitPro…** and then **OK**.
 2. Follow what happens on your computer:
@@ -141,9 +141,9 @@ include, so it helps you install it. If "devkitPro Wii U toolchain" has a red �
    - **Linux:** the Builder shows three commands. Paste them into a terminal.
 3. Click **Install devkitPro…** once more. It installs the Wii U packages; on Mac and Linux it asks
    for your password again.
-4. Click **Check again**. Everything should now show ✓ or ↓.
+4. Click **Check again**. Everything should now show a green tick or a down arrow.
 
-A ↓ next to .NET, CMake or Ninja is fine: the Builder downloads those by itself when you build.
+A down arrow next to .NET, CMake or Ninja is fine: the Builder downloads those by itself when you build.
 
 ### Step 5: Build and copy to your SD card
 
@@ -167,8 +167,8 @@ button layouts are in the [controller guide](wiiu/README.md#controllers).
 
 ### Troubleshooting
 
-- **The Build button is greyed out.** Check that your TowerFall folder has a green ✓, devkitPro
-  shows ✓ (Step 4), and the SD card is chosen (or untick "Copy to SD card").
+- **The Build button is greyed out.** Check that your TowerFall folder has a green tick, devkitPro
+  shows a green tick (Step 4), and the SD card is chosen (or untick "Copy to SD card").
 - **"This looks like the Windows (XNA) version" or "No Content folder found".** Pick the whole
   `TF-8P` folder you unzipped from `TF-8P.zip` (Step 1), not a folder inside it.
 - **The build failed.** The box at the bottom of the Builder shows what went wrong. Often running it
