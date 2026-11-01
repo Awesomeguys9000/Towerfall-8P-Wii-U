@@ -6,7 +6,7 @@
 #
 # The folder must contain the macOS/Linux (FNA) build, i.e. TowerFall.exe next to FNA.dll and the
 # Mono assemblies (mscorlib.dll, System*.dll). For the macOS app bundle these are in
-# TowerFall.app/Contents/MacOS. Requires: .NET SDK 8+ (dotnet), python3.
+# TowerFall.app/Contents/MacOS. Requires: .NET SDK 10+ (dotnet), python3.
 set -e
 PORT="$(cd "$(dirname "$0")" && pwd)"
 GAME="$1"

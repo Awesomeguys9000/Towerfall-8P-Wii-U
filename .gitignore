@@ -30,3 +30,5 @@ extern_usage.txt
 /assets_research/music_manifest.json
 __pycache__/
 /dist/
+/builder/_build/
+/builder/dist/

@@ -1,0 +1,51 @@
+# Builds the standalone TowerFall 8P Builder app (Python bundled) for Windows, macOS and Linux.
+# Every run uploads the zips as workflow artifacts; pushing a tag like v1.0 also attaches them to a release.
+name: Builder app
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+          - os: macos-14        # Apple Silicon
+          - os: macos-15-intel  # Intel Macs
+          - os: ubuntu-22.04    # older glibc, so the binary runs on more distros
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Tk libraries (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y tk-dev
+      - run: pip install pyinstaller certifi
+      - run: python builder/build_app.py
+      - name: Smoke test (no window)
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = macOS ]; then exe="builder/dist/TowerFall 8P Builder.app/Contents/MacOS/TowerFall 8P Builder";
+          elif [ "$RUNNER_OS" = Windows ]; then exe="builder/dist/TowerFall 8P Builder.exe";
+          else exe=builder/dist/towerfall-8p-builder; fi
+          echo 'import pipeline as P; print([r["name"] for r in P.check_tools()]); print("ok")' > smoke.py
+          "$exe" --py smoke.py | tee out.txt
+          grep -q ok out.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: builder-${{ matrix.os }}
+          path: builder/dist/*.zip
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: builder/dist/*.zip

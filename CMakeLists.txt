@@ -36,9 +36,15 @@ if(WIIU)
   target_link_libraries(towerfall PRIVATE SDL2::SDL2 SDL2::SDL2main)
   wut_create_rpx(towerfall)
   # elf2rpl writes a 64 KB main-thread stack; give the game 8 MB (it runs on the main thread)
-  find_package(Python3 REQUIRED COMPONENTS Interpreter)
+  # TF_PYTHON_CMD: optional command list that runs a Python script (the builder app passes itself)
+  if(TF_PYTHON_CMD)
+    set(TF_PY ${TF_PYTHON_CMD})
+  else()
+    find_package(Python3 REQUIRED COMPONENTS Interpreter)
+    set(TF_PY ${Python3_EXECUTABLE})
+  endif()
   add_custom_command(TARGET towerfall POST_BUILD
-    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/wiiu/patch_rpx_stack.py ${CMAKE_CURRENT_BINARY_DIR}/towerfall.rpx 0x800000
+    COMMAND ${TF_PY} ${CMAKE_SOURCE_DIR}/wiiu/patch_rpx_stack.py ${CMAKE_CURRENT_BINARY_DIR}/towerfall.rpx 0x800000
     COMMENT "Patching RPX main-thread stack size")
   wut_create_wuhb(towerfall
     NAME "TowerFall 8P"

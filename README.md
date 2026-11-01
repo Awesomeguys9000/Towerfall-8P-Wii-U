@@ -3,6 +3,8 @@
 A source port of TowerFall (8-player build) from C#/FNA to C++. It runs on the Wii U (Aroma homebrew) and on macOS for testing.
 The original game is never modified: the port reads the game data straight from your copy (`TF-8P/`).
 
+**Just want to play it?** Download the [TowerFall 8P Builder app](#easiest-the-towerfall-8p-builder-app-windows-macos-linux): pick your TowerFall folder, click Build, and it makes the SD card for you.
+
 ## How it works
 
 ```
@@ -46,38 +48,53 @@ This repository contains **no game code or assets**, only the port's own code: t
 
 These folders are git-ignored. Don't commit them.
 
-## Quick start: from your copy of TowerFall to a Wii U SD card
+## Easiest: the TowerFall 8P Builder app (Windows, macOS, Linux)
 
 You need the **TowerFall 8-player build, macOS/Linux (FNA) version**: a folder with `Content/`,
 `DarkWorldContent/` and either `TowerFall.app` or `TowerFall.exe` next to `FNA.dll`.
 
-1. Install the tools once (macOS, with Homebrew):
-   ```sh
-   brew install dotnet cmake python
-   ```
-   Then install [devkitPro](https://devkitpro.org/wiki/Getting_Started) and its Wii U packages:
-   ```sh
-   sudo dkp-pacman -S wiiu-dev wiiu-sdl2 wiiu-sdl2_mixer
-   ```
-2. Clone this repo and run one command, pointing it at your game folder:
-   ```sh
-   git clone https://github.com/Awesomeguys9000/Towerfall-8P-Wii-U.git
-   cd Towerfall-8P-Wii-U
-   ./build_wiiu.sh /path/to/your/TowerFall-folder
-   ```
-   It checks the tools, generates the port from your copy (`setup.sh`), builds the Wii U app and
-   stages everything in `dist/sd/`.
-3. Copy everything inside `dist/sd/` to the root of your SD card. Or let the script do it by
-   giving it the mounted card: `./build_wiiu.sh /path/to/your/TowerFall-folder /Volumes/SDCARD`
-   (saves and `controls.txt` already on the card are kept).
-4. Put the card in a Wii U running [Aroma](https://aroma.foryour.cafe/) and launch TowerFall from the Wii U Menu.
+1. Download the builder for your computer from the
+   [Releases page](https://github.com/Awesomeguys9000/Towerfall-8P-Wii-U/releases) and unzip it.
+   It has Python built in, so there's nothing else to install for the app itself.
+   - **Windows:** `TowerFall 8P Builder.exe`. If SmartScreen warns, click *More info → Run anyway*.
+   - **macOS:** `TowerFall 8P Builder.app` (Apple Silicon `arm64` or Intel `x64` zip). The first time,
+     right-click it and choose *Open* (it isn't signed with an Apple developer ID).
+   - **Linux:** `towerfall-8p-builder`.
+2. Open it and choose your TowerFall folder.
+3. If devkitPro shows a ✗, click **Install devkitPro…** and follow the prompts (it opens devkitPro's
+   own installer, then installs the Wii U packages). This is the only thing you install yourself:
+   devkitPro can't be bundled. .NET, CMake and Ninja are downloaded into the builder's folder
+   automatically.
+4. Optionally tick **Copy to SD card** and choose your card, then click **Build**. The first build
+   takes a few minutes.
+5. Put the card in a Wii U running [Aroma](https://aroma.foryour.cafe/) and launch TowerFall from the Wii U Menu.
 
-`dist/` holds your game's files and artwork, so keep it to yourself. Controls and SD card details are in [`wiiu/README.md`](wiiu/README.md).
+Without a card selected, the files are prepared in `~/TowerFall8P-Builder/SD card files/`; copy
+everything inside it to the root of your SD card. Saves and `controls.txt` already on the card are
+kept. Those files hold your game's data and artwork, so keep them to yourself. Controls and SD card
+details are in [`wiiu/README.md`](wiiu/README.md).
+
+### From the command line
+
+The same build without a window, from a clone of this repo (needs Python 3 and devkitPro):
+
+```sh
+./build_wiiu.sh /path/to/your/TowerFall-folder                  # files go to dist/sd/
+./build_wiiu.sh /path/to/your/TowerFall-folder /Volumes/SDCARD  # also copies to the card
+python3 builder/app.py                                          # the window, run from source
+```
+
+### Making the app (maintainers)
+
+`.github/workflows/builder-app.yml` builds the Windows, macOS (Apple Silicon and Intel) and Linux
+apps with PyInstaller. Run it from the Actions tab, or push a tag like `v1.0` to attach the zips to
+a GitHub release. Locally: `pip install pyinstaller certifi && python builder/build_app.py`. The
+app bundles only the port's own source (`builder/build_app.py` lists it), never game files.
 
 ## Building step by step
 
 Requirements:
-- **macOS:** .NET SDK 8+ (`dotnet`), Python 3, CMake, and SDL2 (Homebrew `sdl2` or `sdl2-compat`).
+- **macOS:** .NET SDK 10+ (`dotnet`), Python 3, CMake, and SDL2 (Homebrew `sdl2` or `sdl2-compat`).
 - **Wii U:** devkitPro with `wiiu-dev`, `wiiu-sdl2` and `wiiu-sdl2_mixer`.
 
 ```sh
