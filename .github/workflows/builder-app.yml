@@ -19,7 +19,7 @@ jobs:
           - os: windows-latest
           - os: macos-14        # Apple Silicon
           - os: macos-15-intel  # Intel Macs
-          - os: ubuntu-22.04    # older glibc, so the binary runs on more distros
+          - os: ubuntu-24.04
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4

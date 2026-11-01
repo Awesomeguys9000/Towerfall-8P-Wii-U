@@ -1,11 +1,176 @@
-# TowerFall 8P → Wii U port
+# TowerFall 8P for Wii U
 
-A source port of TowerFall (8-player build) from C#/FNA to C++. It runs on the Wii U (Aroma homebrew) and on macOS for testing.
-The original game is never modified: the port reads the game data straight from your copy (`TF-8P/`).
+Play the 8-player version of **TowerFall** on your Wii U: up to 8 archers on one screen using the
+Wii U GamePad, Wii Remotes, Pro Controllers and more.
 
-**Just want to play it?** Download the [TowerFall 8P Builder app](#easiest-the-towerfall-8p-builder-app-windows-macos-linux): pick your TowerFall folder, click Build, and it makes the SD card for you.
+This is an unofficial fan port. It contains **no game files**. You build it yourself from your own
+copy of TowerFall, and the free **TowerFall 8P Builder** app does all of the work for you.
 
-## How it works
+- [Credits and thanks](#credits-and-thanks)
+- [Installation guide (start here)](#installation-guide)
+- [Controls](wiiu/README.md#controllers)
+- [Troubleshooting](#troubleshooting)
+- [For developers](#for-developers)
+
+## Credits and thanks
+
+**None of this would be possible without the people below.** TowerFall is their game: its design,
+code, art, music and sound are entirely their work. This port only carries that work over to the
+Wii U, and it could only be built because of the tools and libraries that other people wrote and
+shared for free. Thank you all.
+
+If you enjoy TowerFall, please support the people who made it by buying the game.
+
+### TowerFall Ascension and TowerFall 8-Player
+
+Made by **Matt Makes Games** (now **Extremely OK Games**). From the game's own credits:
+
+| | |
+|---|---|
+| Director, designer, programmer | **Maddy Thorson** |
+| Pixel artist, animator | **Pedro Medeiros** (MiniBoss) |
+| Character designer, concept artist | **Amora Bettany** |
+| Music | **Alec Holowka** |
+| Sound design | **Kevin Regamey** and **Jeff Tangsoc** (Power Up Audio) |
+| Trailers | **Kert Gartner** |
+| Trial devtimes | **Kevin Regamey** and **Chris Spangler** |
+| Porting | **Sickhead Games** and **Ethan Lee** |
+| Localization | **Words of Magic**: Thierry, Josué Monchan, Thomas Faust, Renata Forteleoni, Alex Camilleri, Hannes Flor, Amora Bettany |
+
+The game's credits also thank Noel Berry, Beau Blyth, Shawn Bouchard, Ashly Burch, Jamie Cheng,
+Ryan Clark, Cori Dickinson, Kert Gartner, Tim Graupmann, Sara Gross, Thomas Hourdel, Rami Ismail,
+Chevy Ray Johnston, Will Kirkby, Felix Kramer, Paul Lacen, Greg Lobanov, Jean-François Major, Corey
+Nolan, Chris Plante, Kyle Pulver, John Sanders, Anita Sarkeesian, Kellee Santiago, Chris Spangler,
+Nick Suttner, Nathan Vella, Matthew Wegner, Cellar Door, Cipher Prime, Folsom Street Foundry, Humble
+Bundle, MonoGame and /r/TowerFall.
+
+This port uses the 8-player build of TowerFall Ascension (version 1.3.2), including Dark World.
+TowerFall and all of its content belong to their creators. This project is not affiliated with or
+endorsed by them.
+
+### Tools and libraries this port is built on
+
+| Project | By | Used for |
+|---|---|---|
+| [FNA](https://fna-xna.github.io/) | Ethan Lee and contributors | The framework the Mac/Linux game runs on; the port recreates it on the Wii U |
+| [ILSpy](https://github.com/icsharpcode/ILSpy) | ICSharpCode team | Reading the game's code from your copy |
+| [Roslyn](https://github.com/dotnet/roslyn) and [.NET](https://dotnet.microsoft.com/) | Microsoft and the .NET Foundation | Translating the C# code to C++ |
+| [devkitPro](https://devkitpro.org/), devkitPPC | devkitPro team | The compiler toolchain for the Wii U |
+| [wut](https://github.com/devkitPro/wut) and wut-tools | wut contributors | Wii U system libraries and app packaging (`.wuhb`) |
+| [SDL2](https://www.libsdl.org/) and SDL_mixer | Sam Lantinga and SDL contributors | Graphics, audio and input, on the Wii U and the Mac |
+| [SDL2 for Wii U](https://github.com/devkitPro/SDL) | Wii U homebrew contributors | Running SDL2 on the Wii U |
+| [Aroma](https://aroma.foryour.cafe/) | Maschell and contributors | The Wii U homebrew environment the game runs in |
+| [Bloopair](https://github.com/GaryOderNichts/Bloopair) | GaryOderNichts | Using Switch, PlayStation and other Bluetooth controllers on the Wii U |
+| [stb_image](https://github.com/nothings/stb) | Sean Barrett | Loading images |
+| [Cemu](https://cemu.info/) | Cemu team | Testing on a computer |
+| [CMake](https://cmake.org/), [Ninja](https://ninja-build.org/) | Kitware; Evan Martin and contributors | Running the build |
+| [Python](https://www.python.org/), Tkinter, [PyInstaller](https://pyinstaller.org/), [certifi](https://github.com/certifi/python-certifi) | Python Software Foundation and contributors | The Builder app |
+
+Thanks as well to the whole Wii U homebrew community, whose guides, research and open-source work
+make projects like this possible.
+
+The Wii U port itself, the C# to C++ translator and the Builder app are by
+**[Awesomeguys9000](https://github.com/Awesomeguys9000)**, developed with help from Claude.
+
+## Installation guide
+
+New to Wii U homebrew? No problem. Follow these steps in order. It takes about 30 minutes the first
+time, most of it waiting for downloads.
+
+### What you need
+
+- **A Wii U with Aroma installed.** Aroma is the homebrew environment that runs this game. If you
+  don't have it yet, follow the free step-by-step guide at
+  [wiiu.hacks.guide](https://wiiu.hacks.guide/). It also shows you how to prepare your SD card.
+- **The SD card** from your Wii U (the one Aroma is on), plus a way to plug it into your computer.
+- **A computer** running Windows 10/11, macOS or Linux, with about 3 GB of free space.
+- **Your own copy of TowerFall, the 8-player build, Mac/Linux version.** It's a folder that
+  contains `Content`, `DarkWorldContent` and `TowerFall.app` (or `TowerFall.exe` next to a file
+  called `FNA.dll`). The Windows-only version won't work, and the Builder tells you if you pick it.
+
+### Step 1: Download the TowerFall 8P Builder
+
+Go to the [Releases page](https://github.com/Awesomeguys9000/Towerfall-8P-Wii-U/releases/latest)
+and download the file for your computer:
+
+| Your computer | Download | Then |
+|---|---|---|
+| Windows | `TowerFall8P-Builder-Windows-x64.zip` | Unzip it and open `TowerFall 8P Builder.exe`. If Windows shows "Windows protected your PC", click **More info → Run anyway**. |
+| Mac with Apple Silicon (M1, M2, …) | `TowerFall8P-Builder-macOS-arm64.zip` | Unzip it and open `TowerFall 8P Builder`. |
+| Mac with Intel | `TowerFall8P-Builder-macOS-x64.zip` | Unzip it and open `TowerFall 8P Builder`. If macOS says it can't check the app, right-click it and choose **Open**. |
+| Linux | `TowerFall8P-Builder-Linux-x64.zip` | Unzip it and run `towerfall-8p-builder`. |
+
+Not sure which Mac you have? Click the Apple menu → **About This Mac** and look at "Chip"
+(Apple M-something) or "Processor" (Intel).
+
+You don't need to install anything else first: the app includes everything it needs to run.
+
+### Step 2: Choose your TowerFall folder
+
+In the Builder, click **Choose…** next to "Your TowerFall folder" and pick your TowerFall folder.
+A green **✓ Found TowerFall** appears when it's the right one.
+
+### Step 3: Install devkitPro (first time only)
+
+devkitPro is the free toolkit that builds Wii U software. It's the one thing the Builder can't
+include, so it helps you install it. If "devkitPro Wii U toolchain" has a red ✗:
+
+1. Click **Install devkitPro…** and then **OK**.
+2. Follow what happens on your computer:
+   - **Windows:** the devkitPro installer opens. Click through it, and when it asks which
+     components to install, tick **Wii U Development**.
+   - **Mac:** the devkitPro installer opens. Click through it and enter your Mac password when
+     asked.
+   - **Linux:** the Builder shows three commands. Paste them into a terminal.
+3. Click **Install devkitPro…** once more. It installs the Wii U packages; on Mac and Linux it asks
+   for your password again.
+4. Click **Check again**. Everything should now show ✓ or ↓.
+
+A ↓ next to .NET, CMake or Ninja is fine: the Builder downloads those by itself when you build.
+
+### Step 4: Build and copy to your SD card
+
+1. Put your Wii U's SD card into your computer.
+2. In the Builder, tick **Copy to SD card**, click **Choose…** and pick the SD card. On Windows it's
+   a drive like `E:`; on a Mac it's under **Volumes** (or in Finder's sidebar).
+3. Click **Build**. The first build takes about 10 to 20 minutes. Later builds are faster.
+4. When it says **Done!**, eject the SD card safely (Windows: "Safely Remove Hardware"; Mac: the
+   eject button in Finder) and put it back in your Wii U.
+
+Your saves and settings already on the SD card are kept, so you can run the Builder again any time,
+for example after a new version comes out.
+
+### Step 5: Play
+
+Turn on your Wii U, start Aroma as usual, and open **TowerFall 8P** from the Wii U Menu.
+
+To add players, sync more controllers: press the **SYNC** button on the console and then the red
+sync button on the controller, or hold **−** on the GamePad for 2 seconds. All the controls and
+button layouts are in the [controller guide](wiiu/README.md#controllers).
+
+### Troubleshooting
+
+- **The Build button is greyed out.** Check that your TowerFall folder has a green ✓, devkitPro
+  shows ✓ (Step 3), and the SD card is chosen (or untick "Copy to SD card").
+- **"This looks like the Windows (XNA) version".** The port needs the Mac/Linux version of the
+  8-player build, which has `FNA.dll` next to `TowerFall.exe`.
+- **The build failed.** The box at the bottom of the Builder shows what went wrong. Often running it
+  again fixes download hiccups. If not, open an
+  [issue](https://github.com/Awesomeguys9000/Towerfall-8P-Wii-U/issues) and paste the last part of
+  that log.
+- **No SD card at hand?** Leave "Copy to SD card" unticked. The Builder puts the files in a
+  `TowerFall8P-Builder/SD card files` folder in your home folder and opens it. Copy everything inside
+  it to the root of your SD card.
+- **TowerFall isn't on the Wii U Menu.** Check that `wiiu/apps/towerfall.wuhb` exists on the SD
+  card, and that you started Aroma.
+- **Something goes wrong in the game.** The log of the last run is on the SD card at
+  `wiiu/apps/towerfall/towerfall.log`. Please include it in a bug report.
+
+The files the Builder makes contain your copy of the game, so please keep them to yourself.
+
+## For developers
+
+### How it works
 
 ```
 TF-8P/TowerFall.app/.../TowerFall.exe  --ILSpy-->  decomp/          (decompiled C#, reference only)
@@ -35,7 +200,7 @@ gen/ + runtime/  --CMake-->  build/desktop/towerfall   (macOS test build)
   - `autotest.h` holds scripted virtual-controller test hooks.
 - **`cs/Port/Native.cs`**: the few functions implemented natively (save path, platform name).
 
-## You need your own copy of TowerFall
+### No game files in this repository
 
 This repository contains **no game code or assets**, only the port's own code: the translator, the runtime, the Wii U platform layer and the build scripts. Everything game-derived is generated locally from your own copy of the TowerFall 8-player build (macOS/Linux FNA version):
 
@@ -48,33 +213,7 @@ This repository contains **no game code or assets**, only the port's own code: t
 
 These folders are git-ignored. Don't commit them.
 
-## Easiest: the TowerFall 8P Builder app (Windows, macOS, Linux)
-
-You need the **TowerFall 8-player build, macOS/Linux (FNA) version**: a folder with `Content/`,
-`DarkWorldContent/` and either `TowerFall.app` or `TowerFall.exe` next to `FNA.dll`.
-
-1. Download the builder for your computer from the
-   [Releases page](https://github.com/Awesomeguys9000/Towerfall-8P-Wii-U/releases) and unzip it.
-   It has Python built in, so there's nothing else to install for the app itself.
-   - **Windows:** `TowerFall 8P Builder.exe`. If SmartScreen warns, click *More info → Run anyway*.
-   - **macOS:** `TowerFall 8P Builder.app` (Apple Silicon `arm64` or Intel `x64` zip). The first time,
-     right-click it and choose *Open* (it isn't signed with an Apple developer ID).
-   - **Linux:** `towerfall-8p-builder`.
-2. Open it and choose your TowerFall folder.
-3. If devkitPro shows a ✗, click **Install devkitPro…** and follow the prompts (it opens devkitPro's
-   own installer, then installs the Wii U packages). This is the only thing you install yourself:
-   devkitPro can't be bundled. .NET, CMake and Ninja are downloaded into the builder's folder
-   automatically.
-4. Optionally tick **Copy to SD card** and choose your card, then click **Build**. The first build
-   takes a few minutes.
-5. Put the card in a Wii U running [Aroma](https://aroma.foryour.cafe/) and launch TowerFall from the Wii U Menu.
-
-Without a card selected, the files are prepared in `~/TowerFall8P-Builder/SD card files/`; copy
-everything inside it to the root of your SD card. Saves and `controls.txt` already on the card are
-kept. Those files hold your game's data and artwork, so keep them to yourself. Controls and SD card
-details are in [`wiiu/README.md`](wiiu/README.md).
-
-### From the command line
+### Building from the command line
 
 The same build without a window, from a clone of this repo (needs Python 3 and devkitPro):
 
@@ -84,14 +223,14 @@ The same build without a window, from a clone of this repo (needs Python 3 and d
 python3 builder/app.py                                          # the window, run from source
 ```
 
-### Making the app (maintainers)
+### Making the Builder app
 
 `.github/workflows/builder-app.yml` builds the Windows, macOS (Apple Silicon and Intel) and Linux
 apps with PyInstaller. Run it from the Actions tab, or push a tag like `v1.0` to attach the zips to
 a GitHub release. Locally: `pip install pyinstaller certifi && python builder/build_app.py`. The
 app bundles only the port's own source (`builder/build_app.py` lists it), never game files.
 
-## Building step by step
+### Building step by step
 
 Requirements:
 - **macOS:** .NET SDK 10+ (`dotnet`), Python 3, CMake, and SDL2 (Homebrew `sdl2` or `sdl2-compat`).
@@ -115,7 +254,7 @@ make -C build/wiiu -j8             # -> build/wiiu/towerfall.wuhb (see wiiu/READ
 
 On the Mac, keyboard controls are the game defaults: arrows to move, C jump, X shoot, Z alt-shoot, Shift dodge, S arrows, Enter start. F11 toggles fullscreen. SDL game controllers also work.
 
-## Testing hooks (Mac: environment variables; Wii U: `autotest.txt` next to `Content/`)
+### Testing hooks (Mac: environment variables; Wii U: `autotest.txt` next to `Content/`)
 
 | Variable | Meaning |
 |---|---|
