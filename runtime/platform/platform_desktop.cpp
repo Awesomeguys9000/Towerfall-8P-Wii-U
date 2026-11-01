@@ -82,6 +82,9 @@ bool init()
 
 void shutdown()
 {
+    static bool done = false;   // also called from main() as a fallback after an exception
+    if (done) return;
+    done = true;
     if (g_renderer) SDL_DestroyRenderer(g_renderer);
     if (g_window) SDL_DestroyWindow(g_window);
     SDL_Quit();

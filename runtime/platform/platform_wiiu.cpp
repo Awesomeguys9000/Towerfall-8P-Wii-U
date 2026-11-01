@@ -263,15 +263,26 @@ const PadBits PRO_BITS = {
 // Wii Remote held sideways (D-pad on the left, 1/2 on the right; the IR end points left).
 // Rotating the remote 90 deg counter-clockwise maps: physical Up -> screen left,
 // Down -> right, Left -> down, Right -> up.
-uint32_t map_wiimote_sideways(uint32_t h)
+// Gameplay layer (game): from g_wiimoteMap / controls.txt (default 1 = jump, 2 = shoot).
+// Menu layer (returned): the same, except 2 = confirm and 1 = back, like A/B on an NES pad.
+uint32_t map_wiimote_sideways(uint32_t h, uint32_t& game)
 {
-    uint32_t o = 0;
-    if (h & WPAD_BUTTON_UP)    o |= XB_DPadLeft;
-    if (h & WPAD_BUTTON_DOWN)  o |= XB_DPadRight;
-    if (h & WPAD_BUTTON_LEFT)  o |= XB_DPadDown;
-    if (h & WPAD_BUTTON_RIGHT) o |= XB_DPadUp;
-    for (auto& m : g_wiimoteMap) if (h & m.phys) o |= m.action;
+    uint32_t dpad = 0;
+    if (h & WPAD_BUTTON_UP)    dpad |= XB_DPadLeft;
+    if (h & WPAD_BUTTON_DOWN)  dpad |= XB_DPadRight;
+    if (h & WPAD_BUTTON_LEFT)  dpad |= XB_DPadDown;
+    if (h & WPAD_BUTTON_RIGHT) dpad |= XB_DPadUp;
+    uint32_t g = dpad, o = dpad;
+    for (auto& m : g_wiimoteMap)
+    {
+        if (!(h & m.phys)) continue;
+        g |= m.action;
+        if (m.phys == WPAD_BUTTON_2)      o |= XB_A;
+        else if (m.phys == WPAD_BUTTON_1) o |= XB_B;
+        else                              o |= m.action;
+    }
     // HOME is left to the system.
+    game = g;
     return o;
 }
 
@@ -317,6 +328,7 @@ void stop_all_motors()
 // Fallback: holding MINUS on the GamePad for 2 s opens the system "Sync controllers" screen.
 IOSHandle g_im = -1;
 alignas(0x40) IMRequest g_imRequest;
+alignas(0x40) IMRequest g_imCancelRequest;  // the cancel must not reuse the pending request's block
 alignas(0x40) IMEventMask g_imEvent;
 volatile bool g_imFired = false;
 volatile int g_imError = 0;
@@ -363,7 +375,17 @@ void sync_update()
 void sync_shutdown()
 {
     if (g_im < 0) return;
-    if (g_imArmed) IM_CancelGetEventNotify(g_im, &g_imRequest, nullptr, nullptr);
+    if (g_imArmed)
+    {
+        // g_imRequest holds the async completion state (callback, copy target) of the pending
+        // notify, so cancel through a separate request, then wait for the cancelled notify to
+        // complete before closing the handle and leaving.
+        g_imArmed = false;
+        std::memset(&g_imCancelRequest, 0, sizeof(g_imCancelRequest));
+        IM_CancelGetEventNotify(g_im, &g_imCancelRequest, nullptr, nullptr);
+        for (int i = 0; i < 50 && !g_imFired; i++) OSSleepTicks(OSMillisecondsToTicks(2));
+        if (!g_imFired) log("sync: pending IM notify did not complete after cancel");
+    }
     IM_Close(g_im);
     g_im = -1;
 }
@@ -450,6 +472,7 @@ void update_wpad(int chan)
     PadState p;
     p.connected = true;
     PadType type;
+    uint32_t wiimoteGame = 0;
 
     switch (e) {
     case WPAD_EXT_NUNCHUK:
@@ -486,7 +509,7 @@ void update_wpad(int chan)
     default:
         // Bare Wii Remote (also guitar/drums etc: only the remote's own buttons are used)
         type = PadType::Wiimote;
-        p.buttons = map_wiimote_sideways(k.hold);
+        p.buttons = map_wiimote_sideways(k.hold, wiimoteGame);
         break;
     }
 
@@ -496,8 +519,10 @@ void update_wpad(int chan)
         log(buf);
     }
     s.state = p;
-    // Wii Remote layouts are the same in menus and matches; Nintendo pads have a separate gameplay layer.
-    s.gameButtons = (type == PadType::Classic || type == PadType::Pro) ? g_lastGame : p.buttons;
+    // Nintendo pads and the sideways Wii Remote have a separate gameplay layer; the Nunchuk
+    // layout is the same in menus and matches.
+    s.gameButtons = (type == PadType::Classic || type == PadType::Pro) ? g_lastGame
+                  : type == PadType::Wiimote ? wiimoteGame : p.buttons;
     s.type = type;
 }
 
@@ -625,6 +650,9 @@ bool init()
 
 void shutdown()
 {
+    static bool done = false;   // also called from main() as a fallback after an exception
+    if (done) return;
+    done = true;
     log("TowerFall Wii U: shutdown");
     if (g_input_up) {
         sync_shutdown();

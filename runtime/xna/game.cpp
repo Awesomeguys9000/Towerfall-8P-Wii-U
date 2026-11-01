@@ -11,6 +11,7 @@ using ::System::String;
 namespace Microsoft { namespace Xna { namespace Framework {
 namespace Graphics { void xna_graphics_init(); }
 namespace Audio { void xna_audio_init(); void xna_audio_shutdown(); }
+void xna_shutdown();
 }}}
 
 // ------------------------------------------------------------------ Game
@@ -86,7 +87,23 @@ void Game::Run()
         }
     }
     plat::log(exitRequested ? "Game exited (Exit requested)" : "Game exited (platform quit)");
-    OnExiting(this, ::System::EventArgs::get_Empty());
+    // An exception here must not skip plat::shutdown(): on Wii U that is what finishes the
+    // ProcUI exit and returns to the Wii U Menu.
+    try
+    {
+        OnExiting(this, ::System::EventArgs::get_Empty());
+    }
+    catch (::System::Exception* e)
+    {
+        plat::log(("exception in OnExiting: " + e->ToString()->ToUtf8()).c_str());
+    }
+    xna_shutdown();
+}
+
+// Closes audio, then the platform (both idempotent). main() calls this again as a fallback when
+// an exception escaped the game loop.
+void Microsoft::Xna::Framework::xna_shutdown()
+{
     Audio::xna_audio_shutdown();
     plat::shutdown();
 }

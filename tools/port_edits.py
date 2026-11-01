@@ -76,16 +76,31 @@ def minput(s):
                      "XGamepadData focus")
     s = replace_once(s, "\t\t\telse\n\t\t\t{\n\t\t\t\tCurrentState = default;\n\t\t\t}",
                      "\t\t\telse\n\t\t\t{\n\t\t\t\tCurrentState = default;\n\t\t\t\tgameCurrent = 0u;\n\t\t\t}", "XGamepadData nofocus")
+    # Hot-plug: the PC build scans only PlayerIndex >= XGamepads.Count, which assumes SDL's
+    # compacted pad numbering. Wii U slots are fixed (0 = GamePad, 1..7 = WPAD channels), so
+    # scan every index that isn't in the list yet.
+    s = replace_once(s, "\t\tfor (int i = XGamepads.Count; i < 8; i++)\n\t\t{\n\t\t\tif (GamePad.GetState((PlayerIndex)i).IsConnected)\n",
+                     "\t\tfor (int i = 0; i < 8; i++)\n\t\t{\n\t\t\tbool known = false;\n\t\t\tforeach (XGamepadData xGamepad in XGamepads)\n\t\t\t{\n"
+                     "\t\t\t\tif (xGamepad.PlayerIndex == (PlayerIndex)i)\n\t\t\t\t{\n\t\t\t\t\tknown = true;\n\t\t\t\t}\n\t\t\t}\n"
+                     "\t\t\tif (!known && GamePad.GetState((PlayerIndex)i).IsConnected)\n", "UpdateJoysticks hot-plug")
     return s
 
 
-BUTTONLISTS = '\\t<!-- Wii U: sideways Wii Remote -->\\n\\t<buttonlist>\\n\\t\\t<name>WiiRemote</name>\\n\\t\\t<player>generic/player</player>\\n\\t\\t<move>generic/dpad</move>\\n\\t\\t<jump>generic/1</jump>\\n\\t\\t<shoot>generic/2</shoot>\\n\\t\\t<dodge>generic/shoulder6</dodge>\\n\\t\\t<start>generic/start</start>\\n\\t\\t<confirm>generic/1</confirm>\\n\\t\\t<back>generic/2</back>\\n\\t\\t<alt>generic/shoulder6</alt>\\n\\t\\t<alt2>noButton</alt2>\\n\\t\\t<skip_replay>generic/start</skip_replay>\\n\\t</buttonlist>\\n\\t<!-- Wii U: Wii Remote + Nunchuk -->\\n\\t<buttonlist>\\n\\t\\t<name>Nunchuk</name>\\n\\t\\t<player>generic/player</player>\\n\\t\\t<move>generic/stick</move>\\n\\t\\t<jump>snes/a</jump>\\n\\t\\t<shoot>snes/b</shoot>\\n\\t\\t<dodge>generic/shoulder6</dodge>\\n\\t\\t<start>generic/start</start>\\n\\t\\t<confirm>snes/a</confirm>\\n\\t\\t<back>snes/b</back>\\n\\t\\t<alt>generic/shoulder6</alt>\\n\\t\\t<alt2>snes/select</alt2>\\n\\t\\t<skip_replay>generic/start</skip_replay>\\n\\t</buttonlist>\\n\\t<!-- Wii U: GamePad, Pro Controller, Classic Controller (Nintendo button labels) -->\\n\\t<buttonlist>\\n\\t\\t<name>Nintendo</name>\\n\\t\\t<player>snes/player</player>\\n\\t\\t<move>snes/dpad</move>\\n\\t\\t<jump>snes/b</jump>\\n\\t\\t<shoot>snes/a</shoot>\\n\\t\\t<dodge>snes/r</dodge>\\n\\t\\t<start>snes/start</start>\\n\\t\\t<confirm>snes/a</confirm>\\n\\t\\t<back>snes/b</back>\\n\\t\\t<alt>snes/r</alt>\\n\\t\\t<alt2>snes/l</alt2>\\n\\t\\t<skip_replay>snes/start</skip_replay>\\n\\t</buttonlist>\\n'
+BUTTONLISTS = '\\t<!-- Wii U: sideways Wii Remote -->\\n\\t<buttonlist>\\n\\t\\t<name>WiiRemote</name>\\n\\t\\t<player>generic/player</player>\\n\\t\\t<move>generic/dpad</move>\\n\\t\\t<jump>generic/1</jump>\\n\\t\\t<shoot>generic/2</shoot>\\n\\t\\t<dodge>generic/shoulder6</dodge>\\n\\t\\t<start>generic/start</start>\\n\\t\\t<confirm>generic/2</confirm>\\n\\t\\t<back>generic/1</back>\\n\\t\\t<alt>generic/shoulder6</alt>\\n\\t\\t<alt2>noButton</alt2>\\n\\t\\t<skip_replay>generic/start</skip_replay>\\n\\t</buttonlist>\\n\\t<!-- Wii U: Wii Remote + Nunchuk -->\\n\\t<buttonlist>\\n\\t\\t<name>Nunchuk</name>\\n\\t\\t<player>generic/player</player>\\n\\t\\t<move>generic/stick</move>\\n\\t\\t<jump>snes/a</jump>\\n\\t\\t<shoot>snes/b</shoot>\\n\\t\\t<dodge>generic/shoulder6</dodge>\\n\\t\\t<start>generic/start</start>\\n\\t\\t<confirm>snes/a</confirm>\\n\\t\\t<back>snes/b</back>\\n\\t\\t<alt>generic/shoulder6</alt>\\n\\t\\t<alt2>snes/select</alt2>\\n\\t\\t<skip_replay>generic/start</skip_replay>\\n\\t</buttonlist>\\n\\t<!-- Wii U: GamePad, Pro Controller, Classic Controller (Nintendo button labels) -->\\n\\t<buttonlist>\\n\\t\\t<name>Nintendo</name>\\n\\t\\t<player>snes/player</player>\\n\\t\\t<move>snes/dpad</move>\\n\\t\\t<jump>snes/b</jump>\\n\\t\\t<shoot>snes/a</shoot>\\n\\t\\t<dodge>snes/r</dodge>\\n\\t\\t<start>snes/start</start>\\n\\t\\t<confirm>snes/a</confirm>\\n\\t\\t<back>snes/b</back>\\n\\t\\t<alt>snes/r</alt>\\n\\t\\t<alt2>snes/l</alt2>\\n\\t\\t<skip_replay>snes/start</skip_replay>\\n\\t</buttonlist>\\n'
 CONTROLLERS = '\\t<!-- Wii U controllers -->\\n\\t<controller>\\n\\t\\t<name>Wii U GamePad</name>\\n\\t\\t<guid>wiiu_gamepad</guid>\\n\\t\\t<buttonset>Nintendo</buttonset>\\n\\t</controller>\\n\\t<controller>\\n\\t\\t<name>Pro Controller</name>\\n\\t\\t<guid>procontroller</guid>\\n\\t\\t<buttonset>Nintendo</buttonset>\\n\\t</controller>\\n\\t<controller>\\n\\t\\t<name>Classic Controller</name>\\n\\t\\t<guid>classic</guid>\\n\\t\\t<buttonset>Nintendo</buttonset>\\n\\t</controller>\\n\\t<controller>\\n\\t\\t<name>Wii Remote</name>\\n\\t\\t<guid>wiimote</guid>\\n\\t\\t<buttonset>WiiRemote</buttonset>\\n\\t</controller>\\n\\t<controller>\\n\\t\\t<name>Wii Remote + Nunchuk</name>\\n\\t\\t<guid>nunchuk</guid>\\n\\t\\t<buttonset>Nunchuk</buttonset>\\n\\t</controller>\\n'
 
 
 def xgamepad(s):
     s = replace_once(s, r"\t<!-- Users can add buttonlists here. -->", BUTTONLISTS + r"\t<!-- Users can add buttonlists here. -->", "buttonlists")
     s = replace_once(s, r"\t<!-- Users can add controllers here. -->", CONTROLLERS + r"\t<!-- Users can add controllers here. -->", "controllers")
+    # The icon config is only written when missing, so update the sideways Wii Remote's menu icons
+    # (2 = confirm, 1 = back) in configs saved by older builds.
+    s = replace_once(s, "\t\tif (!File.Exists(text))\n\t\t{\n\t\t\tusing StreamWriter streamWriter = new StreamWriter(text, append: false);",
+                     "\t\tif (File.Exists(text))\n\t\t{\n\t\t\tstring iconConfig = File.ReadAllText(text);\n"
+                     "\t\t\tstring upgraded = iconConfig.Replace(\"<confirm>generic/1</confirm>\\n\\t\\t<back>generic/2</back>\\n\\t\\t<alt>generic/shoulder6</alt>\\n\\t\\t<alt2>noButton</alt2>\", "
+                     "\"<confirm>generic/2</confirm>\\n\\t\\t<back>generic/1</back>\\n\\t\\t<alt>generic/shoulder6</alt>\\n\\t\\t<alt2>noButton</alt2>\");\n"
+                     "\t\t\tif (upgraded != iconConfig)\n\t\t\t{\n\t\t\t\tFile.WriteAllText(text, upgraded);\n\t\t\t}\n\t\t}\n"
+                     "\t\tif (!File.Exists(text))\n\t\t{\n\t\t\tusing StreamWriter streamWriter = new StreamWriter(text, append: false);", "icon config upgrade")
     a = s.index("\tpublic override InputState GetState()")
     b = s.index("\tpublic override void Rumble(", a)
     body = s[a:b]

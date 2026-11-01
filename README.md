@@ -46,7 +46,35 @@ This repository contains **no game code or assets**, only the port's own code: t
 
 These folders are git-ignored. Don't commit them.
 
-## Building
+## Quick start: from your copy of TowerFall to a Wii U SD card
+
+You need the **TowerFall 8-player build, macOS/Linux (FNA) version**: a folder with `Content/`,
+`DarkWorldContent/` and either `TowerFall.app` or `TowerFall.exe` next to `FNA.dll`.
+
+1. Install the tools once (macOS, with Homebrew):
+   ```sh
+   brew install dotnet cmake python
+   ```
+   Then install [devkitPro](https://devkitpro.org/wiki/Getting_Started) and its Wii U packages:
+   ```sh
+   sudo dkp-pacman -S wiiu-dev wiiu-sdl2 wiiu-sdl2_mixer
+   ```
+2. Clone this repo and run one command, pointing it at your game folder:
+   ```sh
+   git clone https://github.com/Awesomeguys9000/Towerfall-8P-Wii-U.git
+   cd Towerfall-8P-Wii-U
+   ./build_wiiu.sh /path/to/your/TowerFall-folder
+   ```
+   It checks the tools, generates the port from your copy (`setup.sh`), builds the Wii U app and
+   stages everything in `dist/sd/`.
+3. Copy everything inside `dist/sd/` to the root of your SD card. Or let the script do it by
+   giving it the mounted card: `./build_wiiu.sh /path/to/your/TowerFall-folder /Volumes/SDCARD`
+   (saves and `controls.txt` already on the card are kept).
+4. Put the card in a Wii U running [Aroma](https://aroma.foryour.cafe/) and launch TowerFall from the Wii U Menu.
+
+`dist/` holds your game's files and artwork, so keep it to yourself. Controls and SD card details are in [`wiiu/README.md`](wiiu/README.md).
+
+## Building step by step
 
 Requirements:
 - **macOS:** .NET SDK 8+ (`dotnet`), Python 3, CMake, and SDL2 (Homebrew `sdl2` or `sdl2-compat`).

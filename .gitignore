@@ -29,3 +29,4 @@ extern_usage.txt
 /assets_research/shaders_disasm.txt
 /assets_research/music_manifest.json
 __pycache__/
+/dist/

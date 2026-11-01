@@ -76,12 +76,14 @@ In-game actions: **Jump** (also menu confirm), **Shoot** (also menu back), **Dod
 | Wii Remote | Action | XNA button |
 |---|---|---|
 | D-pad (rotated: Up=left, Down=right, Left=down, Right=up) | Move / aim | DPad |
-| 1 | Jump / confirm | A |
-| 2 | Shoot / back | X |
+| 1 | Jump (menus: back) | A (menus: B) |
+| 2 | Shoot (menus: confirm) | X (menus: A) |
 | B (trigger) | Dodge | RightShoulder |
 | A, Minus | Toggle arrows | Y |
 | Plus | Pause / start | Start |
 | HOME | System HOME menu | - |
+
+In menus 2 confirms and 1 goes back, like A and B on an NES pad. In matches 1 jumps and 2 shoots.
 
 ### Wii Remote + Nunchuk (remote held upright)
 
@@ -112,7 +114,7 @@ In-game actions: **Jump** (also menu confirm), **Shoot** (also menu back), **Dod
 ### Remapping
 
 On first launch the game writes `sd:/wiiu/apps/towerfall/controls.txt` with every mapping
-(`pad.*`, `wiimote.*`, `nunchuk.*`). Edit it and restart the game. Actions: `jump`, `shoot`,
+(`pad.*`, `wiimote.*`, `nunchuk.*`). Edit it and restart the game. For the sideways Wii Remote this changes the in-match layout only; menus always use 2 = confirm, 1 = back. Actions: `jump`, `shoot`,
 `altshoot`, `dodge`, `dodge_l`, `arrows`, `start`, `back`, `none`. (On-screen button icons
 show the default layout.)
 

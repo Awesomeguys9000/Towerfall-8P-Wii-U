@@ -8,6 +8,7 @@ void __tf_register_roots();
 void __tf_register_reflection();
 
 namespace plat { const char* autotest_config(const char* key); }
+namespace Microsoft { namespace Xna { namespace Framework { void xna_shutdown(); } } }
 static int RealMain(int argc, char** argv)
 {
     if (plat::autotest_config("TF_CENSUS")) ::sys::gc_enable_census(true);
@@ -23,8 +24,12 @@ static int RealMain(int argc, char** argv)
     {
         std::string m = "Unhandled exception: " + e->ToString()->ToUtf8();
         plat::log(m.c_str());
+        ::Microsoft::Xna::Framework::xna_shutdown();
         return 1;
     }
+    // TFGame.Main catches exceptions thrown out of Game.Run, which then skipped the shutdown.
+    // Without it the Wii U never finishes the ProcUI exit and can't return to the menu.
+    ::Microsoft::Xna::Framework::xna_shutdown();
     return 0;
 }
 
