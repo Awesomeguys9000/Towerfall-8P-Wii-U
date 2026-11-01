@@ -30,7 +30,29 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y tk-dev
       - run: pip install pyinstaller certifi
+      - name: Import Developer ID certificate (macOS, when the secrets are set)
+        if: runner.os == 'macOS'
+        env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: |
+          [ -n "$MACOS_CERT_P12" ] || { echo "no certificate secret: building unsigned"; exit 0; }
+          kc="$RUNNER_TEMP/sign.keychain-db"; kp="$(uuidgen)"
+          security create-keychain -p "$kp" "$kc"
+          security set-keychain-settings -lut 21600 "$kc"
+          security unlock-keychain -p "$kp" "$kc"
+          echo "$MACOS_CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -k "$kc" -P "$MACOS_CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$kp" "$kc"
+          security list-keychains -d user -s "$kc" $(security list-keychains -d user | tr -d '"')
+          rm "$RUNNER_TEMP/cert.p12"
+          id=$(security find-identity -v -p codesigning "$kc" | grep -o '"Developer ID Application[^"]*"' | head -1 | tr -d '"')
+          echo "MACOS_SIGN_IDENTITY=$id" >> "$GITHUB_ENV"
       - run: python builder/build_app.py
+        env:
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+          NOTARY_TEAM_ID: ${{ secrets.NOTARY_TEAM_ID }}
       - name: Smoke test (no window)
         shell: bash
         run: |

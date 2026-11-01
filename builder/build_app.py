@@ -3,12 +3,18 @@
     pip install pyinstaller certifi
     python builder/build_app.py
 
+macOS signing (optional, all from environment variables):
+    MACOS_SIGN_IDENTITY   e.g. "Developer ID Application: Your Name (TEAMID)": sign with the hardened runtime
+    NOTARY_PROFILE        a keychain profile from `xcrun notarytool store-credentials`: also notarize and staple
+    or NOTARY_APPLE_ID, NOTARY_PASSWORD (app-specific password), NOTARY_TEAM_ID (used in CI)
+
 Output (in builder/dist/): "TowerFall 8P Builder.app" on macOS, "TowerFall 8P Builder.exe" on Windows,
 "towerfall-8p-builder" on Linux, plus a .zip of it ready to upload. The app bundles only the port's
 own source (from git), never game files.
 """
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -59,6 +65,7 @@ def main():
     osname = {"darwin": "macOS", "win32": "Windows"}.get(sys.platform, "Linux")
     zpath = os.path.join(dist, f"TowerFall8P-Builder-{osname}-{arch}.zip")
     if sys.platform == "darwin":
+        sign_and_notarize(os.path.join(dist, NAME + ".app"), zpath)
         # ditto keeps the .app's symlinks, permissions and signature intact
         subprocess.run(["ditto", "-c", "-k", "--keepParent", os.path.join(dist, NAME + ".app"), zpath], check=True)
     else:
@@ -70,6 +77,51 @@ def main():
             with open(exe, "rb") as f:
                 z.writestr(info, f.read())
     print("built", zpath)
+
+
+def sign_and_notarize(app, zpath):
+    ident = os.environ.get("MACOS_SIGN_IDENTITY")
+    if not ident:
+        print("not signing (MACOS_SIGN_IDENTITY not set)")
+        return
+    ent = os.path.join(HERE, "entitlements.plist")
+    sign = ["codesign", "--force", "--timestamp", "--options", "runtime", "--entitlements", ent, "--sign", ident]
+    # sign every Mach-O inside first (innermost first), then the bundle itself
+    machos = []
+    for root, _, names in os.walk(os.path.join(app, "Contents")):
+        for n in names:
+            p = os.path.join(root, n)
+            if os.path.islink(p):
+                continue
+            with open(p, "rb") as f:
+                magic = f.read(4)
+            if magic in (b"\xcf\xfa\xed\xfe", b"\xce\xfa\xed\xfe", b"\xca\xfe\xba\xbe"):
+                machos.append(p)
+    for p in sorted(machos, key=lambda x: -x.count(os.sep)):
+        subprocess.run(sign + [p], check=True, capture_output=True)
+    subprocess.run(sign + [app], check=True)
+    subprocess.run(["codesign", "--verify", "--deep", "--strict", "--verbose=2", app], check=True)
+    print(f"signed {len(machos)} binaries and the app as {ident}")
+
+    profile = os.environ.get("NOTARY_PROFILE")
+    creds = [os.environ.get(k) for k in ("NOTARY_APPLE_ID", "NOTARY_PASSWORD", "NOTARY_TEAM_ID")]
+    auth = ["--keychain-profile", profile] if profile else \
+        (["--apple-id", creds[0], "--password", creds[1], "--team-id", creds[2]] if all(creds) else None)
+    if not auth:
+        print("not notarizing (set NOTARY_PROFILE, or NOTARY_APPLE_ID / NOTARY_PASSWORD / NOTARY_TEAM_ID)")
+    else:
+        subprocess.run(["ditto", "-c", "-k", "--keepParent", app, zpath], check=True)
+        print("submitting to Apple for notarization (usually a few minutes)")
+        r = subprocess.run(["xcrun", "notarytool", "submit", zpath, "--wait"] + auth, capture_output=True, text=True)
+        print(r.stdout, r.stderr)
+        if r.returncode != 0 or "status: Accepted" not in r.stdout:
+            sub = re.search(r"id: ([0-9a-f-]{36})", r.stdout)
+            if sub:  # show Apple's reasons
+                subprocess.run(["xcrun", "notarytool", "log", sub.group(1)] + auth)
+            raise SystemExit("notarization failed")
+        subprocess.run(["xcrun", "stapler", "staple", app], check=True)
+        print("notarized and stapled")
+    subprocess.run(["spctl", "--assess", "--type", "execute", "--verbose=2", app])
 
 
 if __name__ == "__main__":
